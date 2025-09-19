@@ -21,6 +21,15 @@ jobs:
           ls -la
           ls -la frontend || true
           ls -la frontend/dist || true
+      - name: Check SWA token presence (no value printed)
+        run: |
+          if [ -z "${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_BLACK_BEACH_0EDAAE903 }}" ]; then
+            echo "❌ SWA token secret is EMPTY or not visible to this workflow."
+            exit 1
+          else
+            echo "✅ SWA token secret is present (length check only)."
+            echo "::add-mask::${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_BLACK_BEACH_0EDAAE903 }}"
+          fi
 
       - name: Deploy prebuilt site
         uses: Azure/static-web-apps-deploy@v1
@@ -29,6 +38,8 @@ jobs:
           action: upload
           app_location: frontend/dist
           skip_app_build: true
+          production_branch: main
+          deployment_environment: Production
 
   close_pr:
     if: github.event_name == 'pull_request' && github.event.action == 'closed'
@@ -37,3 +48,4 @@ jobs:
       - uses: Azure/static-web-apps-deploy@v1
         with:
           action: close
+
